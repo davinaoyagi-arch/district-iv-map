@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Honolulu City Council District IV Interactive Map</title>
+  <link rel="preconnect" href="https://unpkg.com" />
+  <link rel="preconnect" href="https://{s}.tile.openstreetmap.org" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --ink: #1f2f36;
+      --ink-soft: #5a6468;
+      --deep: #112f38;
+      --ocean: #17736f;
+      --ocean-2: #2b948c;
+      --sand: #f6f1e8;
+      --paper: #fffaf0;
+      --gold: #d8a83d;
+      --coral: #bd6649;
+      --line: rgba(31, 47, 54, 0.14);
+      --shadow: 0 18px 45px rgba(17, 47, 56, 0.16);
+      font-family: "Avenir Next", "Montserrat", "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--sand);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(340px, 420px) 1fr;
+      min-height: 100vh;
+    }
+
+    .panel {
+      background: var(--paper);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      max-height: 100vh;
+      overflow: auto;
+      box-shadow: var(--shadow);
+      z-index: 500;
+    }
+
+    .brand {
+      padding: 28px 28px 20px;
+      color: #fff;
+      background:
+        linear-gradient(135deg, rgba(17, 47, 56, 0.98), rgba(23, 115, 111, 0.94)),
+        linear-gradient(90deg, rgba(216, 168, 61, 0.20), rgba(189, 102, 73, 0.08));
+      border-bottom: 5px solid var(--gold);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(2.15rem, 4.8vw, 3.55rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .brand h1 span {
+      color: var(--gold);
+    }
+
+    .lede {
+      margin: 18px 0 0;
+      max-width: 32rem;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .content {
+      padding: 20px 24px 28px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    button,
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      border: 1px solid rgba(17, 52, 61, 0.16);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 750;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    button:hover,
+    .source-link:hover,
+    .project-item:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(6, 63, 82, 0.12);
+    }
+
+    button.primary {
+      background: var(--deep);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    button.active {
+      background: #e7f5f2;
+      border-color: rgba(11, 127, 121, 0.45);
+      color: var(--deep);
+    }
+
+    .section {
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .section h2 {
+      margin: 0 0 10px;
+      font-size: 0.86rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--deep);
+    }
+
+    .facts,
+    .funding-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .fact,
+    .funding-cell {
+      min-width: 0;
+      padding: 12px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      border-top: 4px solid var(--gold);
+    }
+
+    .fact strong {
+      display: block;
+      font-size: 1.1rem;
+      color: var(--deep);
+      line-height: 1.1;
+    }
+
+    .fact span {
+      display: block;
+      margin-top: 6px;
+      color: var(--ink-soft);
+      font-size: 0.73rem;
+      line-height: 1.25;
+    }
+
+    .funding-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 10px;
+    }
+
+    .funding-cell strong {
+      display: block;
+      color: var(--deep);
+      font-size: 1.28rem;
+      line-height: 1.1;
+    }
+
+    .funding-cell span {
+      display: block;
+      margin-top: 6px;
+      color: var(--ink-soft);
+      font-size: 0.73rem;
+      line-height: 1.25;
+    }
+
+    .project-item {
+      justify-content: flex-start;
+      min-height: 38px;
+      padding: 8px 10px;
+      border-color: rgba(11, 127, 121, 0.18);
+      background: #fff;
+      font-size: 0.88rem;
+      font-weight: 720;
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
+
+    .project-list {
+      display: grid;
+      gap: 8px;
+      max-height: 48vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .project-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      column-gap: 10px;
+      min-height: 48px;
+      width: 100%;
+    }
+
+    .project-item strong {
+      color: var(--deep);
+      font-size: 0.82rem;
+      line-height: 1.25;
+    }
+
+    .project-item span {
+      padding: 4px 6px;
+      border-radius: 6px;
+      background: rgba(232, 184, 75, 0.22);
+      color: var(--deep);
+      font-size: 0.74rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .project-item.review span {
+      background: rgba(217, 109, 77, 0.18);
+    }
+
+    .project-item.outside span {
+      background: rgba(6, 63, 82, 0.14);
+    }
+
+    .project-item.active {
+      border-color: rgba(11, 127, 121, 0.62);
+      background: #edf7f4;
+    }
+
+    .source-grid {
+      display: grid;
+      gap: 9px;
+    }
+
+    .source-link {
+      justify-content: flex-start;
+      padding: 10px 12px;
+      color: var(--deep);
+    }
+
+    .note {
+      margin: 10px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .map-wrap {
+      min-width: 0;
+      position: relative;
+    }
+
+    #map {
+      width: 100%;
+      height: 100vh;
+      background: #d9eee9;
+    }
+
+    .map-badge {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      z-index: 450;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255, 253, 248, 0.94);
+      box-shadow: 0 10px 28px rgba(6, 63, 82, 0.16);
+      color: var(--deep);
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+    }
+
+    .legend {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(255, 253, 248, 0.95);
+      box-shadow: 0 10px 28px rgba(6, 63, 82, 0.16);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-size: 0.82rem;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 10px;
+      border-radius: 2px;
+      border: 2px solid var(--deep);
+      background: rgba(11, 127, 121, 0.32);
+    }
+
+    .swatch.context {
+      border-color: rgba(17, 52, 61, 0.42);
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .swatch.cip {
+      border-color: var(--deep);
+      background: var(--gold);
+    }
+
+    .swatch.review {
+      border-color: var(--deep);
+      background: var(--coral);
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      color: var(--ink);
+    }
+
+    .popup-title {
+      margin: 0 0 4px;
+      color: var(--deep);
+      font-weight: 850;
+    }
+
+    .popup-meta {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .popup-total {
+      display: inline-flex;
+      margin: 8px 0 6px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: #e7f5f2;
+      color: var(--deep);
+      font-size: 0.92rem;
+      font-weight: 850;
+    }
+
+    .popup-funding {
+      width: 100%;
+      margin-top: 6px;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .popup-funding td {
+      padding: 4px 0;
+      border-top: 1px solid rgba(17, 52, 61, 0.11);
+    }
+
+    .popup-funding td:last-child {
+      padding-left: 18px;
+      text-align: right;
+      font-weight: 800;
+      color: var(--deep);
+    }
+
+    .cip-marker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 3px solid #fff;
+      border-radius: 50% 50% 50% 8px;
+      color: var(--deep);
+      background: var(--gold);
+      box-shadow: 0 8px 18px rgba(6, 63, 82, 0.3);
+      font-size: 0.66rem;
+      font-weight: 900;
+      transform: rotate(-45deg);
+    }
+
+    .cip-marker span {
+      transform: rotate(45deg);
+    }
+
+    .cip-marker.review {
+      background: var(--coral);
+      color: #fff;
+    }
+
+    .cip-marker.outside {
+      background: var(--deep);
+      color: #fff;
+    }
+
+    .project-sheet {
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .app {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .map-wrap {
+        order: 1;
+      }
+
+      .panel {
+        order: 2;
+        max-height: none;
+        box-shadow: none;
+        border-right: 0;
+      }
+
+      .brand {
+        padding: 20px 22px 16px;
+      }
+
+      .brand h1 {
+        font-size: 2.35rem;
+      }
+
+      .lede {
+        margin-top: 12px;
+        font-size: 0.95rem;
+        line-height: 1.45;
+      }
+
+      .content {
+        padding: 16px 20px 24px;
+      }
+
+      .toolbar {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .project-list {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      #map {
+        height: 52vh;
+        min-height: 360px;
+      }
+
+      .map-badge {
+        left: 14px;
+        right: 14px;
+        justify-content: center;
+      }
+
+      .project-sheet {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        z-index: 900;
+        display: none;
+        max-height: min(58vh, 520px);
+        overflow: auto;
+        padding: 16px;
+        border: 1px solid rgba(17, 52, 61, 0.16);
+        border-radius: 12px;
+        background: rgba(255, 253, 248, 0.98);
+        box-shadow: 0 20px 48px rgba(6, 63, 82, 0.28);
+      }
+
+      .project-sheet.open {
+        display: block;
+      }
+
+      .sheet-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .sheet-head h2 {
+        margin: 0;
+        color: var(--deep);
+        font-size: 1rem;
+        line-height: 1.25;
+      }
+
+      .sheet-close {
+        flex: 0 0 auto;
+        width: 36px;
+        min-height: 36px;
+        padding: 0;
+        border-radius: 50%;
+        background: #fff;
+        font-size: 1.35rem;
+        line-height: 1;
+      }
+
+      .sheet-location,
+      .sheet-note {
+        margin: 0;
+        color: var(--ink-soft);
+        font-size: 0.88rem;
+        line-height: 1.42;
+      }
+
+      .sheet-total {
+        display: inline-flex;
+        margin: 10px 0 8px;
+        padding: 6px 9px;
+        border-radius: 7px;
+        background: #e7f5f2;
+        color: var(--deep);
+        font-weight: 850;
+      }
+
+      .sheet-funding {
+        width: 100%;
+        margin: 4px 0 10px;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+
+      .sheet-funding td {
+        padding: 7px 0;
+        border-top: 1px solid rgba(17, 52, 61, 0.12);
+      }
+
+      .sheet-funding td:last-child {
+        text-align: right;
+        font-weight: 850;
+        color: var(--deep);
+      }
+    }
+
+    @media (max-width: 460px) {
+      .brand,
+      .content {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .brand h1 {
+        font-size: 2rem;
+      }
+
+      .eyebrow {
+        margin-bottom: 12px;
+        font-size: 0.72rem;
+      }
+
+      .toolbar {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .toolbar button {
+        min-height: 46px;
+        padding: 8px 6px;
+        font-size: 0.78rem;
+      }
+
+      #map {
+        height: 50vh;
+        min-height: 330px;
+      }
+
+      .facts,
+      .project-item {
+        grid-template-columns: 1fr;
+      }
+
+      .project-item span {
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="panel" aria-label="District IV map controls and information">
+      <header class="brand">
+        <p class="eyebrow"><i data-lucide="waves" aria-hidden="true"></i> Tommy Waters • District IV</p>
+        <h1>Tommy Gets <span>It Done</span></h1>
+        <p class="lede">Since Fiscal Year 2021, Tommy Waters has brought in nearly $200 million in improvements to our community. Tommy Gets it Done!</p>
+      </header>
+
+      <div class="content">
+        <section class="section" aria-label="Map controls">
+          <div class="toolbar">
+            <button class="primary" id="fitDistrict" type="button"><i data-lucide="scan" aria-hidden="true"></i> Fit District</button>
+            <button id="toggleProjects" type="button" class="active"><i data-lucide="landmark" aria-hidden="true"></i> Projects</button>
+            <button id="toggleBase" type="button"><i data-lucide="satellite" aria-hidden="true"></i> Satellite</button>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="funding-heading">
+          <h2 id="funding-heading">CIP Funding Tommy Waters Brought In</h2>
+          <div class="funding-grid">
+            <div class="funding-cell"><strong id="totalFunding">$0</strong><span>Total CIP funding shown</span></div>
+            <div class="funding-cell"><strong id="projectCount">0</strong><span>Mapped project investments</span></div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="projects-heading">
+          <h2 id="projects-heading">Funded Projects</h2>
+          <div class="project-list" id="projectList"></div>
+        </section>
+      </div>
+    </aside>
+
+    <section class="map-wrap" aria-label="Interactive map">
+      <div class="map-badge"><i data-lucide="map" aria-hidden="true"></i> District IV / 4</div>
+      <div id="map"></div>
+    </section>
+
+    <aside class="project-sheet" id="projectSheet" aria-live="polite" aria-label="Selected project details">
+      <div class="sheet-head">
+        <h2 id="sheetTitle"></h2>
+        <button class="sheet-close" id="sheetClose" type="button" aria-label="Close project details">×</button>
+      </div>
+      <p class="sheet-location" id="sheetLocation"></p>
+      <span class="sheet-total" id="sheetTotal"></span>
+      <table class="sheet-funding" aria-label="Funding by fiscal year">
+        <tbody id="sheetFunding"></tbody>
+      </table>
+      <p class="sheet-note" id="sheetNote"></p>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="./district-map-data.js"></script>
+  <script>
+    const colors = {
+      deep: "#063f52",
+      ocean: "#0b7f79",
+      ocean2: "#24a39a",
+      gold: "#e8b84b",
+      coral: "#d96d4d"
+    };
+
+    const formatCurrency = (value) => new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0
+    }).format(value || 0);
+
+    const shortMoney = (value) => {
+      if (!value) return "$0";
+      if (value >= 1000000) return `$${(value / 1000000).toFixed(value >= 10000000 ? 0 : 1)}M`;
+      if (value >= 1000) return `$${Math.round(value / 1000)}K`;
+      return formatCurrency(value);
+    };
+
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
+
+    const statusLabel = (status) => ({
+      district: "District IV site",
+      review: "District IV review / corridor item",
+      outside: "Outside current District IV note"
+    })[status] || "Project";
+
+    const map = L.map("map", {
+      zoomControl: false,
+      preferCanvas: true
+    });
+
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+
+    const streetTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    const satelliteTiles = L.tileLayer("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19,
+      attribution: "Tiles &copy; Esri"
+    });
+
+    const districtLayer = L.geoJSON(window.DISTRICT_IV, {
+      style: {
+        color: colors.deep,
+        weight: 3,
+        opacity: 0.98,
+        fillColor: colors.ocean2,
+        fillOpacity: 0.34
+      },
+      onEachFeature: (feature, layer) => {
+        layer.bindPopup(`
+          <p class="popup-title">${feature.properties.distname}</p>
+          <p class="popup-meta">Official Honolulu County Council boundary. Dist. number: ${feature.properties.distnumber}.</p>
+        `);
+        layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.48, color: colors.coral }));
+        layer.on("mouseout", () => districtLayer.resetStyle(layer));
+      }
+    }).addTo(map);
+
+    const contextLayer = L.geoJSON(window.ALL_DISTRICTS, {
+      filter: feature => feature.properties.distnumber !== 4,
+      style: feature => ({
+        color: feature.properties.distnumber === 4 ? colors.deep : "rgba(17, 52, 61, 0.42)",
+        weight: 1.2,
+        opacity: 0.8,
+        fillColor: "#ffffff",
+        fillOpacity: 0.08
+      }),
+      onEachFeature: (feature, layer) => {
+        layer.bindPopup(`
+          <p class="popup-title">${feature.properties.distname}</p>
+          <p class="popup-meta">Shown for context. District IV is highlighted.</p>
+        `);
+      }
+    }).addTo(map);
+
+    const projectLayer = L.layerGroup().addTo(map);
+    const projectMarkers = [];
+    const projectList = document.getElementById("projectList");
+    const projectButtons = new Map();
+    const projectSheet = document.getElementById("projectSheet");
+    const sheetTitle = document.getElementById("sheetTitle");
+    const sheetLocation = document.getElementById("sheetLocation");
+    const sheetTotal = document.getElementById("sheetTotal");
+    const sheetFunding = document.getElementById("sheetFunding");
+    const sheetNote = document.getElementById("sheetNote");
+    const isMobileView = () => window.matchMedia("(max-width: 860px)").matches;
+
+    const buildFundingRows = (project) => project.funding.map((item) => `
+      <tr>
+        <td>${escapeHtml(item.year)}</td>
+        <td>${formatCurrency(item.amount)}</td>
+      </tr>
+    `).join("");
+
+    const projectPopup = (project) => `
+      <p class="popup-title">${escapeHtml(project.title)}</p>
+      <p class="popup-meta">${escapeHtml(project.location)}</p>
+      <span class="popup-total">${formatCurrency(project.total)} total</span>
+      <table class="popup-funding" aria-label="Funding by fiscal year">
+        <tbody>${buildFundingRows(project)}</tbody>
+      </table>
+      <p class="popup-meta"><strong>${statusLabel(project.status)}.</strong> ${escapeHtml(project.note)}</p>
+    `;
+
+    const showProjectSheet = (project) => {
+      sheetTitle.textContent = project.title;
+      sheetLocation.textContent = project.location;
+      sheetTotal.textContent = `${formatCurrency(project.total)} total`;
+      sheetFunding.innerHTML = buildFundingRows(project);
+      sheetNote.innerHTML = `<strong>${statusLabel(project.status)}.</strong> ${escapeHtml(project.note)}`;
+      projectSheet.classList.add("open");
+    };
+
+    const hideProjectSheet = () => {
+      projectSheet.classList.remove("open");
+    };
+
+    const focusProject = (project, marker) => {
+      if (!map.hasLayer(projectLayer)) {
+        map.addLayer(projectLayer);
+        document.getElementById("toggleProjects").classList.add("active");
+      }
+      projectButtons.forEach((button) => button.classList.remove("active"));
+      projectButtons.get(project.id)?.classList.add("active");
+      map.flyTo(marker.getLatLng(), 15, { duration: 0.75 });
+      if (isMobileView()) {
+        map.closePopup();
+        showProjectSheet(project);
+      } else {
+        hideProjectSheet();
+        window.setTimeout(() => marker.openPopup(), 550);
+      }
+    };
+
+    (window.CIP_PROJECTS || []).forEach((project) => {
+      const markerClass = project.status === "district" ? "" : project.status;
+      const marker = L.marker([project.displayLat || project.lat, project.displayLng || project.lng], {
+        icon: L.divIcon({
+          className: "",
+          html: `<div class="cip-marker ${markerClass}"><span>${shortMoney(project.total)}</span></div>`,
+          iconSize: [34, 34],
+          iconAnchor: [17, 31],
+          popupAnchor: [0, -28]
+        }),
+        title: `${project.title} - ${formatCurrency(project.total)}`
+      }).bindPopup(projectPopup(project), { maxWidth: 340 });
+      marker.addTo(projectLayer);
+      projectMarkers.push(marker);
+
+      marker.on("click", () => {
+        projectButtons.forEach((button) => button.classList.remove("active"));
+        projectButtons.get(project.id)?.classList.add("active");
+        if (isMobileView()) {
+          map.closePopup();
+          showProjectSheet(project);
+        } else {
+          hideProjectSheet();
+        }
+      });
+
+      marker.on("popupopen", () => {
+        if (isMobileView()) {
+          map.closePopup();
+          showProjectSheet(project);
+        }
+      });
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `project-item ${project.status === "district" ? "" : project.status}`;
+      button.innerHTML = `<strong>${escapeHtml(project.title)}</strong><span>${shortMoney(project.total)}</span>`;
+      button.addEventListener("click", () => focusProject(project, marker));
+      projectButtons.set(project.id, button);
+      projectList.appendChild(button);
+    });
+
+    const renderFundingSummary = () => {
+      const summary = window.CIP_SUMMARY || {};
+      document.getElementById("totalFunding").textContent = shortMoney(summary.totalFunding);
+      document.getElementById("projectCount").textContent = `${summary.projectCount || 0}`;
+    };
+
+    renderFundingSummary();
+
+    document.getElementById("sheetClose").addEventListener("click", hideProjectSheet);
+
+    const districtBounds = districtLayer.getBounds();
+    map.fitBounds(districtBounds.pad(0.1));
+
+    const legend = L.control({ position: "bottomleft" });
+    legend.onAdd = () => {
+      const div = L.DomUtil.create("div", "legend");
+      div.innerHTML = `
+        <div class="legend-row"><span class="swatch"></span> District IV boundary</div>
+        <div class="legend-row"><span class="swatch context"></span> Other council districts</div>
+        <div class="legend-row"><span class="swatch cip"></span> CIP funded project</div>
+        <div class="legend-row"><span class="swatch review"></span> Review / outside note</div>
+      `;
+      return div;
+    };
+    legend.addTo(map);
+
+    document.getElementById("fitDistrict").addEventListener("click", () => {
+      map.fitBounds(districtBounds.pad(0.1));
+    });
+
+    document.getElementById("toggleProjects").addEventListener("click", (event) => {
+      const active = map.hasLayer(projectLayer);
+      if (active) {
+        map.removeLayer(projectLayer);
+        hideProjectSheet();
+      } else {
+        map.addLayer(projectLayer);
+      }
+      event.currentTarget.classList.toggle("active", !active);
+    });
+
+    window.addEventListener("resize", () => {
+      if (!isMobileView()) hideProjectSheet();
+    });
+
+    document.getElementById("toggleBase").addEventListener("click", (event) => {
+      const usingSatellite = map.hasLayer(satelliteTiles);
+      if (usingSatellite) {
+        map.removeLayer(satelliteTiles);
+        streetTiles.addTo(map);
+        event.currentTarget.classList.remove("active");
+      } else {
+        map.removeLayer(streetTiles);
+        satelliteTiles.addTo(map);
+        event.currentTarget.classList.add("active");
+      }
+    });
+
+    contextLayer.bringToBack();
+    districtLayer.bringToFront();
+
+    if (window.lucide) {
+      window.lucide.createIcons({ attrs: { width: 18, height: 18, strokeWidth: 2.2 } });
+    }
+  </script>
+</body>
+</html>
