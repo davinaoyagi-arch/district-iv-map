@@ -411,15 +411,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
-      height: 34px;
+      width: 46px;
+      height: 46px;
       border: 3px solid #fff;
       border-radius: 50% 50% 50% 8px;
       color: var(--deep);
       background: #ffffff;
       border-color: var(--deep);
       box-shadow: 0 8px 18px rgba(46, 59, 152, 0.28);
-      font-size: 0.66rem;
+      font-size: 0.72rem;
       font-weight: 900;
       transform: rotate(-45deg);
     }
@@ -632,7 +632,7 @@
       <header class="brand">
         <p class="eyebrow"><i data-lucide="waves" aria-hidden="true"></i> Tommy Waters • District IV</p>
         <h1>Tommy Gets <span>It Done</span></h1>
-        <p class="lede">Since Fiscal Year 2021, Tommy Waters has brought in more than $145 million in mapped improvements to our community. Tommy Gets it Done!</p>
+        <p class="lede">Since Fiscal Year 2021, Tommy Waters has brought in more than $92 million in mapped District IV improvements to our community. Tommy Gets it Done!</p>
       </header>
 
       <div class="content">
@@ -680,7 +680,7 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-  <script src="./district-map-data.js?v=cleaned-20260627"></script>
+  <script src="./district-map-data.js?v=district-only-20260627"></script>
   <script>
     const colors = {
       deep: "#2e3b98",
@@ -834,9 +834,9 @@
         icon: L.divIcon({
           className: "",
           html: `<div class="cip-marker ${markerClass}"><span>${shortMoney(project.total)}</span></div>`,
-          iconSize: [34, 34],
-          iconAnchor: [17, 31],
-          popupAnchor: [0, -28]
+          iconSize: [46, 46],
+          iconAnchor: [23, 42],
+          popupAnchor: [0, -38]
         }),
         title: `${project.title} - ${formatCurrency(project.total)}`
       }).bindPopup(projectPopup(project), { maxWidth: 340 });
@@ -890,7 +890,7 @@
         <div class="legend-row"><span class="swatch"></span> District IV boundary</div>
         <div class="legend-row"><span class="swatch context"></span> Other council districts</div>
         <div class="legend-row"><span class="swatch cip"></span> CIP funded project</div>
-        <div class="legend-row"><span class="swatch review"></span> Review / outside note</div>
+        <div class="legend-row"><span class="swatch review"></span> Review / corridor item</div>
       `;
       return div;
     };
