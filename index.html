@@ -9,17 +9,17 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     :root {
-      --ink: #1f2f36;
-      --ink-soft: #5a6468;
-      --deep: #112f38;
-      --ocean: #17736f;
-      --ocean-2: #2b948c;
-      --sand: #f6f1e8;
-      --paper: #fffaf0;
-      --gold: #d8a83d;
-      --coral: #bd6649;
-      --line: rgba(31, 47, 54, 0.14);
-      --shadow: 0 18px 45px rgba(17, 47, 56, 0.16);
+      --ink: #20264a;
+      --ink-soft: #686b72;
+      --deep: #2e3b98;
+      --ocean: #3546ad;
+      --ocean-2: #5c68c6;
+      --sand: #f3f4f7;
+      --paper: #ffffff;
+      --gold: #9b9da1;
+      --coral: #6f7279;
+      --line: rgba(46, 59, 152, 0.16);
+      --shadow: 0 18px 45px rgba(46, 59, 152, 0.16);
       font-family: "Avenir Next", "Montserrat", "Segoe UI", Roboto, Arial, sans-serif;
     }
 
@@ -59,9 +59,9 @@
       padding: 28px 28px 20px;
       color: #fff;
       background:
-        linear-gradient(135deg, rgba(17, 47, 56, 0.98), rgba(23, 115, 111, 0.94)),
-        linear-gradient(90deg, rgba(216, 168, 61, 0.20), rgba(189, 102, 73, 0.08));
-      border-bottom: 5px solid var(--gold);
+        linear-gradient(135deg, rgba(46, 59, 152, 0.98), rgba(53, 70, 173, 0.93)),
+        linear-gradient(90deg, rgba(155, 157, 161, 0.22), rgba(255, 255, 255, 0.08));
+      border-bottom: 5px solid #9b9da1;
     }
 
     .eyebrow {
@@ -85,7 +85,8 @@
     }
 
     .brand h1 span {
-      color: var(--gold);
+      color: #ffffff;
+      text-shadow: 2px 2px 0 rgba(155, 157, 161, 0.55);
     }
 
     .lede {
@@ -129,7 +130,7 @@
     .source-link:hover,
     .project-item:hover {
       transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(6, 63, 82, 0.12);
+      box-shadow: 0 10px 20px rgba(46, 59, 152, 0.13);
     }
 
     button.primary {
@@ -139,8 +140,8 @@
     }
 
     button.active {
-      background: #e7f5f2;
-      border-color: rgba(11, 127, 121, 0.45);
+      background: #eef0fb;
+      border-color: rgba(46, 59, 152, 0.45);
       color: var(--deep);
     }
 
@@ -176,7 +177,7 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fff;
-      border-top: 4px solid var(--gold);
+      border-top: 4px solid var(--deep);
     }
 
     .fact strong {
@@ -218,7 +219,7 @@
       justify-content: flex-start;
       min-height: 38px;
       padding: 8px 10px;
-      border-color: rgba(11, 127, 121, 0.18);
+      border-color: rgba(46, 59, 152, 0.18);
       background: #fff;
       font-size: 0.88rem;
       font-weight: 720;
@@ -252,7 +253,7 @@
     .project-item span {
       padding: 4px 6px;
       border-radius: 6px;
-      background: rgba(232, 184, 75, 0.22);
+      background: rgba(46, 59, 152, 0.12);
       color: var(--deep);
       font-size: 0.74rem;
       font-weight: 850;
@@ -260,16 +261,16 @@
     }
 
     .project-item.review span {
-      background: rgba(217, 109, 77, 0.18);
+      background: rgba(155, 157, 161, 0.22);
     }
 
     .project-item.outside span {
-      background: rgba(6, 63, 82, 0.14);
+      background: rgba(46, 59, 152, 0.18);
     }
 
     .project-item.active {
-      border-color: rgba(11, 127, 121, 0.62);
-      background: #edf7f4;
+      border-color: rgba(46, 59, 152, 0.62);
+      background: #eef0fb;
     }
 
     .source-grid {
@@ -298,7 +299,7 @@
     #map {
       width: 100%;
       height: 100vh;
-      background: #d9eee9;
+      background: #e7e9f4;
     }
 
     .map-badge {
@@ -312,7 +313,7 @@
       padding: 10px 12px;
       border-radius: 8px;
       background: rgba(255, 253, 248, 0.94);
-      box-shadow: 0 10px 28px rgba(6, 63, 82, 0.16);
+      box-shadow: 0 10px 28px rgba(46, 59, 152, 0.16);
       color: var(--deep);
       font-weight: 800;
       backdrop-filter: blur(10px);
@@ -322,7 +323,7 @@
       padding: 10px 12px;
       border-radius: 8px;
       background: rgba(255, 253, 248, 0.95);
-      box-shadow: 0 10px 28px rgba(6, 63, 82, 0.16);
+      box-shadow: 0 10px 28px rgba(46, 59, 152, 0.16);
       color: var(--ink);
       line-height: 1.45;
     }
@@ -340,7 +341,7 @@
       height: 10px;
       border-radius: 2px;
       border: 2px solid var(--deep);
-      background: rgba(11, 127, 121, 0.32);
+      background: rgba(46, 59, 152, 0.28);
     }
 
     .swatch.context {
@@ -350,7 +351,7 @@
 
     .swatch.cip {
       border-color: var(--deep);
-      background: var(--gold);
+      background: var(--ocean-2);
     }
 
     .swatch.review {
@@ -381,7 +382,7 @@
       margin: 8px 0 6px;
       padding: 5px 8px;
       border-radius: 6px;
-      background: #e7f5f2;
+      background: #eef0fb;
       color: var(--deep);
       font-size: 0.92rem;
       font-weight: 850;
@@ -415,8 +416,9 @@
       border: 3px solid #fff;
       border-radius: 50% 50% 50% 8px;
       color: var(--deep);
-      background: var(--gold);
-      box-shadow: 0 8px 18px rgba(6, 63, 82, 0.3);
+      background: #ffffff;
+      border-color: var(--deep);
+      box-shadow: 0 8px 18px rgba(46, 59, 152, 0.28);
       font-size: 0.66rem;
       font-weight: 900;
       transform: rotate(-45deg);
@@ -427,7 +429,7 @@
     }
 
     .cip-marker.review {
-      background: var(--coral);
+      background: var(--gold);
       color: #fff;
     }
 
@@ -512,7 +514,7 @@
         border: 1px solid rgba(17, 52, 61, 0.16);
         border-radius: 12px;
         background: rgba(255, 253, 248, 0.98);
-        box-shadow: 0 20px 48px rgba(6, 63, 82, 0.28);
+        box-shadow: 0 20px 48px rgba(46, 59, 152, 0.28);
       }
 
       .project-sheet.open {
@@ -558,7 +560,7 @@
         margin: 10px 0 8px;
         padding: 6px 9px;
         border-radius: 7px;
-        background: #e7f5f2;
+        background: #eef0fb;
         color: var(--deep);
         font-weight: 850;
       }
@@ -681,11 +683,11 @@
   <script src="./district-map-data.js"></script>
   <script>
     const colors = {
-      deep: "#063f52",
-      ocean: "#0b7f79",
-      ocean2: "#24a39a",
-      gold: "#e8b84b",
-      coral: "#d96d4d"
+      deep: "#2e3b98",
+      ocean: "#3546ad",
+      ocean2: "#5c68c6",
+      gold: "#9b9da1",
+      coral: "#6f7279"
     };
 
     const formatCurrency = (value) => new Intl.NumberFormat("en-US", {
